@@ -33,13 +33,18 @@ bool volatile cor = false;
 // PROTÓTIPOS
 void initButtons();
 void initLeds();
+void initPIO();
+void setLEDs(uint gpio, char *corLED);
 void gpio_irq_handler(uint gpio, uint32_t events);
 
 int main()
 {
     stdio_init_all();
+
+    // INICIALIZANDO BOTÕES E LEDS
     initButtons();
     initLeds();
+
     // I2C Initialisation. Using it at 400Khz.
     i2c_init(I2C_PORT, 400 * 1000);
 
@@ -53,23 +58,20 @@ int main()
 
     // Limpa o display. O display inicia com todos os pixels apagados.
     ssd1306_fill(&ssd, false);
-    ssd1306_send_data(&ssd);
+    ssd1306_send_data(&ssd); //Atualiza display
 
     // configurações da PIO
-    PIO pio = pio0;
-    uint offset = pio_add_program(pio, &RP2040SerialInterfaces_program);
-    uint sm = pio_claim_unused_sm(pio, true);
-    RP2040SerialInterfaces_program_init(pio, sm, offset, OUT_PIN);
+    initPIO();
 
-    bool cor = true;
-
+    // CONFIGURAÇÃO DAS INTERRUPÇÕES
     gpio_set_irq_enabled_with_callback(BUTTON_A, GPIO_IRQ_EDGE_FALL, true, &gpio_irq_handler);
     gpio_set_irq_enabled_with_callback(BUTTON_B, GPIO_IRQ_EDGE_FALL, true, &gpio_irq_handler);
 
     while (true)
     {
+        // LOOP PRINCIPAL
         char caractere;
-        scanf(" %c", &caractere); 
+        scanf(" %c", &caractere);
 
         if (caractere >= '0' && caractere <= '9')
         {
@@ -78,7 +80,7 @@ int main()
         }
 
         ssd1306_draw_char(&ssd, caractere, 0, 10);
-        ssd1306_send_data(&ssd);
+        ssd1306_send_data(&ssd); //Atualiza display
         sleep_ms(1000);
     }
 }
@@ -91,51 +93,40 @@ void gpio_irq_handler(uint gpio, uint32_t events)
     // Verifica se o tempo mínimo de debounce passou (300ms)
     if (current_time - last_time > 300000)
     {
+        // Limpa o display. O display inicia com todos os pixels apagados.
         ssd1306_fill(&ssd, false);
         ssd1306_send_data(&ssd);
         last_time = current_time;
         if (gpio == BUTTON_A)
         {
-            gpio_put(LED_GREEN, !gpio_get(LED_GREEN));
-            char *estado = (gpio_get(LED_GREEN)) ? "ESTA LIGADO" : "ESTA DESLIGADO";
-
-            if (gpio_get(LED_BLUE) && gpio_get(LED_GREEN))
-            {
-                ssd1306_draw_string(&ssd, "O LED VERDE", 0, 10);
-                ssd1306_draw_string(&ssd, "E O LED AZUL", 0, 25);
-                ssd1306_draw_string(&ssd, "ESTAO LIGADOS", 0, 40);
-                printf("O LED VERDE E O AZUL ESTAO LIGADOS\n");
-            }
-            else
-            {
-                ssd1306_draw_string(&ssd, "O LED VERDE", 0, 10);
-                ssd1306_draw_string(&ssd, estado, 0, 25);
-                printf("O LED VERDE %s\n", estado);
-            }
-
+            setLEDs(LED_GREEN, "O LED VERDE");
             ssd1306_send_data(&ssd); // Atualiza o display
         }
         if (gpio == BUTTON_B)
         {
-            gpio_put(LED_BLUE, !gpio_get(LED_BLUE));
-            char *estado = (gpio_get(LED_BLUE)) ? "ESTA LIGADO" : "ESTA DESLIGADO";
-
-            if (gpio_get(LED_BLUE) && gpio_get(LED_GREEN))
-            {
-                ssd1306_draw_string(&ssd, "O LED VERDE", 0, 10);
-                ssd1306_draw_string(&ssd, "E O LED AZUL", 0, 25);
-                ssd1306_draw_string(&ssd, "ESTAO LIGADOS", 0, 40);
-                printf("O LED VERDE E O AZUL ESTAO LIGADOS\n");
-            }
-            else
-            {
-                ssd1306_draw_string(&ssd, "O LED AZUL", 0, 10);
-                ssd1306_draw_string(&ssd, estado, 0, 25);
-                printf("O LED AZUL %s\n", estado);
-            }
-
+            setLEDs(LED_BLUE, "O LED AZUL");
             ssd1306_send_data(&ssd); // Atualiza o display
         }
+    }
+}
+
+void setLEDs(uint gpio, char *corLED)
+{
+    gpio_put(gpio, !gpio_get(gpio));
+    char *estado = (gpio_get(gpio)) ? "ESTA LIGADO" : "ESTA DESLIGADO";
+
+    if (gpio_get(LED_BLUE) && gpio_get(LED_GREEN))
+    {
+        ssd1306_draw_string(&ssd, "O LED VERDE", 0, 10);
+        ssd1306_draw_string(&ssd, "E O LED AZUL", 0, 25);
+        ssd1306_draw_string(&ssd, "ESTAO LIGADOS", 0, 40);
+        printf("O LED VERDE E O AZUL ESTAO LIGADOS\n");
+    }
+    else
+    {
+        ssd1306_draw_string(&ssd, corLED, 0, 10);
+        ssd1306_draw_string(&ssd, estado, 0, 25);
+        printf("%s %s\n", corLED, estado);
     }
 }
 
@@ -159,4 +150,11 @@ void initLeds()
 
     gpio_init(LED_GREEN);
     gpio_set_dir(LED_GREEN, GPIO_OUT);
+}
+
+void initPIO(){
+    PIO pio = pio0;
+    uint offset = pio_add_program(pio, &RP2040SerialInterfaces_program);
+    uint sm = pio_claim_unused_sm(pio, true);
+    RP2040SerialInterfaces_program_init(pio, sm, offset, OUT_PIN);
 }
