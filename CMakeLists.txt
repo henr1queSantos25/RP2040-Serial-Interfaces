@@ -53,7 +53,6 @@ target_link_libraries(RP2040SerialInterfaces PRIVATE
         pico_stdlib
         hardware_pio
 	    hardware_adc
-        pico_bootrom
         hardware_i2c)
 
 # Add the standard include files to the build

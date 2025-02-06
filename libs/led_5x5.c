@@ -1,12 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
 #include "pico/stdlib.h"
 #include "hardware/pio.h"
 #include "hardware/clocks.h"
-#include "hardware/adc.h"
-#include "pico/bootrom.h"
-#include "hardware/timer.h"
 
 // ARQUIVO .pio
 #include "RP2040SerialInterfaces.pio.h"

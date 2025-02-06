@@ -4,7 +4,6 @@
 #include "hardware/pio.h"
 #include "hardware/clocks.h"
 #include "hardware/adc.h"
-#include "pico/bootrom.h"
 #include "hardware/timer.h"
 #include "hardware/i2c.h"
 #include "libs/ssd1306.h"
