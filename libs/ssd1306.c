@@ -197,3 +197,12 @@ void ssd1306_draw_string(ssd1306_t *ssd, const char *str, uint8_t x, uint8_t y)
     }
   }
 }
+
+bool ssd1306_is_empty(ssd1306_t *ssd) {
+  for (uint16_t i = 1; i < ssd->bufsize; ++i) {
+      if (ssd->ram_buffer[i] != 0x00) {
+          return false; // Encontrou pelo menos um pixel aceso
+      }
+  }
+  return true; // Nenhum pixel aceso
+}
