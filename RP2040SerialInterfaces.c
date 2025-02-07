@@ -12,18 +12,21 @@
 // ARQUIVO .pio
 #include "RP2040SerialInterfaces.pio.h"
 
+// DEFINIÇÃO DA PINAGEM
 #define OUT_PIN 7
 #define BUTTON_A 5
 #define BUTTON_B 6
 #define LED_GREEN 11
 #define LED_BLUE 12
-#define I2C_PORT i2c1
 #define I2C_SDA 14
 #define I2C_SCL 15
+
+#define I2C_PORT i2c1
 #define endereco 0x3C
 
-ssd1306_t ssd;
+ssd1306_t ssd; // Inicializa a estrutura do display
 
+// FUNÇÃO EXTERNA DO ARQUIVO "led_5x5.c"
 extern void drawMatrix(int digit);
 
 // VARIÁVEIS VOLÁTEIS
@@ -31,33 +34,35 @@ uint32_t volatile last_time = 0; // variável que auxilia no debounce
 bool volatile cor = false;
 
 // PROTÓTIPOS
-void initButtons();
-void initLeds();
-void initPIO();
-void setLEDs(uint gpio, char *corLED);
-void gpio_irq_handler(uint gpio, uint32_t events);
+void initButtons(); // inicializa os botões
+void initLeds(); // inicializa os leds
+void initPIO(); // inicializa e configura o PIO
+void setLEDs(uint gpio, char *corLED); // alterna o estado do led e informa no display
+void gpio_irq_handler(uint gpio, uint32_t events); // função que é chamada na interrupção
 
 int main()
 {
-    stdio_init_all();
+    // INICIALIZA UART PADRÃO
+    stdio_init_all(); 
 
     // INICIALIZANDO BOTÕES E LEDS
     initButtons();
     initLeds();
 
-    // I2C Initialisation. Using it at 400Khz.
+    // INICIALIZAÇÃO DO I2C COM 400Khz
     i2c_init(I2C_PORT, 400 * 1000);
 
-    gpio_set_function(I2C_SDA, GPIO_FUNC_I2C);                    // Set the GPIO pin function to I2C
-    gpio_set_function(I2C_SCL, GPIO_FUNC_I2C);                    // Set the GPIO pin function to I2C
-    gpio_pull_up(I2C_SDA);                                        // Pull up the data line
-    gpio_pull_up(I2C_SCL);                                        // Pull up the clock line
-    ssd1306_init(&ssd, WIDTH, HEIGHT, false, endereco, I2C_PORT); // Inicializa o display
-    ssd1306_config(&ssd);                                         // Configura o display
-    ssd1306_send_data(&ssd);                                      // Envia os dados para o display
+    // CONFIGURAÇÃO DO I2C
+    gpio_set_function(I2C_SDA, GPIO_FUNC_I2C); // Define a função do pino GPIO para I2C.
+    gpio_set_function(I2C_SCL, GPIO_FUNC_I2C); // Define a função do pino GPIO para I2C.
+    gpio_pull_up(I2C_SDA); // Configura pull-up para a linha de dados
+    gpio_pull_up(I2C_SCL); // Configura pull-up para a linha de clock
 
-    // Limpa o display. O display inicia com todos os pixels apagados.
-    ssd1306_fill(&ssd, false);
+    // CONFIGURAÇÃO DO DISPLAY
+    ssd1306_init(&ssd, WIDTH, HEIGHT, false, endereco, I2C_PORT); // Inicializa o display
+    ssd1306_config(&ssd); // Configura o display
+    ssd1306_send_data(&ssd); // Envia os dados para o display
+    ssd1306_fill(&ssd, false); // Limpa o display. O display inicia com todos os pixels apagados.
     ssd1306_send_data(&ssd); //Atualiza display
 
     // configurações da PIO
@@ -75,10 +80,14 @@ int main()
 
         if (caractere >= '0' && caractere <= '9')
         {
-            int digit = caractere - '0'; // Converte o caractere para um número real (0 a 9)
+            int digit = caractere - '0'; 
             drawMatrix(digit);
         }
 
+        if(!ssd1306_is_empty(&ssd)){
+            sleep_ms(50);
+            ssd1306_fill(&ssd, false);
+        }
         ssd1306_draw_char(&ssd, caractere, 0, 10);
         ssd1306_send_data(&ssd); //Atualiza display
         sleep_ms(1000);
@@ -152,6 +161,7 @@ void initLeds()
     gpio_set_dir(LED_GREEN, GPIO_OUT);
 }
 
+// INICIALIZAÇÃO E CONFIGURAÇÃO DO PIO
 void initPIO(){
     PIO pio = pio0;
     uint offset = pio_add_program(pio, &RP2040SerialInterfaces_program);
