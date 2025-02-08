@@ -1,4 +1,4 @@
-# 🔗 Tarefa: Interfaces de Comunicação Serial com RP2040  
+# 🔗 Interfaces de Comunicação Serial com RP2040  
 
 Este repositório contém um exemplo de código para a implementação de **interfaces de comunicação serial (UART e I2C)** utilizando o **Raspberry Pi Pico W**. O projeto combina o uso de **LEDs**, **botões físicos**, **display SSD1306** e **uma matriz de LEDs WS2812**.  
 
