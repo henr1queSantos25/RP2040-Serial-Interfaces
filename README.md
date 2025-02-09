@@ -31,6 +31,7 @@ Este repositório contém um exemplo de código para a implementação de **inte
 
 - `RP2040SerialInterfaces.c`: Código-fonte principal contendo a implementação das interfaces de comunicação serial.  
 - `RP2040SerialInterfaces.pio`: Código PIO para controle da matriz de LEDs.  
+- `libs/led_5x5.c`: Implementação das funções responsáveis por desenhar os números na matriz 5x5 de LEDs WS2812.  
 - `libs/ssd1306.h` e `libs/font.h`: Bibliotecas para o controle do display OLED SSD1306.  
 - `README.md`: Documentação detalhada do projeto.  
 - `diagram.json`: Configuração do circuito para simulação no **Wokwi**.  
