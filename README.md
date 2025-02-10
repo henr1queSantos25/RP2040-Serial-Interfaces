@@ -13,7 +13,7 @@ Este repositório contém um exemplo de código para a implementação de **inte
 
 ## 📹 Vídeo do Projeto  
 
-- **[Ver Vídeo](#)**  
+- **[Ver Vídeo](https://drive.google.com/file/d/1NjGgvKuDI5KYiKAhJUVmNyddmERM3XH2/view?usp=sharing)**  
 
 ## 🛠️ Tecnologias Utilizadas  
 
